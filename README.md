@@ -2,7 +2,8 @@
 
 An intelligent, Gemini-powered Streamlit app that analyzes resumes and provides actionable feedback on content clarity, skill presentation, and experience alignment — all within seconds!
 
-![App Screenshot](https://drive.google.com/file/d/1unDpEWEiK1g0Xlgh9IXxSYwYdRFH10Rp/view?usp=sharing)
+![App Screenshot](https://drive.google.com/uc?export=view&id=1unDpEWEiK1g0Xlgh9IXxSYwYdRFH10Rp
+)
 
 ---
 
@@ -119,4 +120,5 @@ AI-Resume-Critiquer/
 
 Built by **Hemang Krish** using [Streamlit](https://streamlit.io/) and [Google Gemini AI](https://ai.google.dev/).
 Special thanks to open-source contributors and Streamlit Cloud for free hosting!
+
 
