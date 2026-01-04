@@ -17,7 +17,7 @@ st.markdown("Upload your resume in PDF or TXT format and get instant feedback!")
 # ------------------ GEMINI SETUP ------------------
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-model = genai.GenerativeModel("models/gemini-1.0-pro")
+model = genai.GenerativeModel("gemini-1.0-pro")
 
 
 # ------------------ FILE UPLOAD ------------------
