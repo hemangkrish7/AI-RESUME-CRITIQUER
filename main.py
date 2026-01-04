@@ -2,59 +2,77 @@ import streamlit as st
 import PyPDF2
 import os
 import io
-from dotenv import load_dotenv
-from google import genai  # ✅ updated import
+import google.generativeai as genai
 
-load_dotenv()
+# ------------------ CONFIG ------------------
+st.set_page_config(
+    page_title="AI Resume Critiquer",
+    page_icon="📝",
+    layout="centered"
+)
 
-st.set_page_config(page_title="AI Resume Critiquer", page_icon=":memo:", layout="centered")    
-st.title("AI Resume Critiquer :memo:")
-st.markdown("Upload your resume in PDF format and get instant feedback to improve it!")
+st.title("AI Resume Critiquer 📝")
+st.markdown("Upload your resume in PDF or TXT format and get instant feedback!")
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# ------------------ GEMINI SETUP ------------------
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-uploaded_file = st.file_uploader("Upload your Resume file (PDF or TXT)", type=["pdf", "txt"])
+model = genai.GenerativeModel("gemini-1.5-flash")
+
+# ------------------ FILE UPLOAD ------------------
+uploaded_file = st.file_uploader(
+    "Upload your Resume file (PDF or TXT)",
+    type=["pdf", "txt"]
+)
+
 job_role = st.text_input("Enter the job role you are applying for:")
 analyze = st.button("Analyze Resume")
 
+# ------------------ HELPERS ------------------
 def extract_text_from_pdf(pdf_file):
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    reader = PyPDF2.PdfReader(pdf_file)
     text = ""
-    for page in pdf_reader.pages:
-        text += page.extract_text() + "\n"
+    for page in reader.pages:
+        extracted = page.extract_text()
+        if extracted:
+            text += extracted + "\n"
     return text
 
-def extract_text_from_file(uploaded_file):
-    if uploaded_file.type == "application/pdf":
-        return extract_text_from_pdf(io.BytesIO(uploaded_file.read()))
-    return uploaded_file.read().decode("utf-8")
+def extract_text_from_file(file):
+    if file.type == "application/pdf":
+        return extract_text_from_pdf(io.BytesIO(file.read()))
+    else:
+        return file.read().decode("utf-8")
 
+# ------------------ ANALYSIS ------------------
 if analyze and uploaded_file:
     try:
-        file_content = extract_text_from_file(uploaded_file)
-        if not file_content.strip():
+        resume_text = extract_text_from_file(uploaded_file)
+
+        if not resume_text.strip():
             st.error("The uploaded file is empty. Please upload a valid resume.")
             st.stop()
 
-        prompt = f"""Please analyze this resume and provide constructive feedback.
-        Focus on:
-        1. Content clarity and impact
-        2. Skills presentation
-        3. Experience description
-        4. Specific improvements for {job_role if job_role else 'general job applications'}
+        prompt = f"""
+You are an expert career advisor and ATS specialist.
 
-        Resume Content:
-        {file_content}
+Analyze the resume below and provide **clear, actionable feedback** focusing on:
+1. Content clarity and impact
+2. Skills presentation
+3. Experience & project descriptions
+4. ATS optimization tips
+5. Specific improvements for the role: {job_role if job_role else "general job applications"}
 
-        Please provide your analysis in a clear and structured format with actionable recommendations."""
+Resume:
+{resume_text}
 
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",  # You can also try "gemini-2.5-flash"
-            contents=f"You are an expert career advisor.\n\n{prompt}"
-        )
+Respond in a structured format with bullet points.
+"""
 
-        st.markdown("### Resume Analysis and Feedback:")
+        response = model.generate_content(prompt)
+
+        st.markdown("## 📊 Resume Analysis & Feedback")
         st.markdown(response.text)
 
     except Exception as e:
-        st.error(f"An error occurred while processing the file: {e}")
+        st.error(f"An error occurred: {e}")
