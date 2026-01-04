@@ -1,0 +1,9 @@
+[project]
+name = "ai-resume-critiquer"
+version = "0.1.0"
+dependencies = [
+  "streamlit",
+  "google-generativeai",
+  "PyPDF2"
+]
+
